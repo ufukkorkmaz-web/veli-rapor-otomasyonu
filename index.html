@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veli Toplantısı Rapor Otomasyonu</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#fff; --ink:#1d2330; --mute:#6b7280; --line:#e2e5ea;
+  --brand:#1f5fbf; --brand-d:#174a96; --brand-l:#e8f0fc; --ok:#12805c; --warn:#b45309; --danger:#c0392b;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14171d; --card:#1c2029; --ink:#e8eaee; --mute:#9aa3b2; --line:#2c3240; --brand:#6ea2f0; --brand-d:#8db6f5; --brand-l:#1f2c44; --ok:#4cc79b; --warn:#e0a050; --danger:#ef7a6c}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header.top{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+h1{font-size:17px;margin:0;font-weight:650;letter-spacing:-.01em;flex:1;min-width:200px}
+h1 small{display:block;font-weight:400;color:var(--mute);font-size:12.5px}
+.tabs{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px}
+.tabs button{border:0;background:transparent;color:var(--mute);padding:6px 14px;border-radius:7px;cursor:pointer;font:inherit;font-weight:550}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:8px;cursor:pointer;font-weight:550;line-height:1.2}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-d);border-color:var(--brand-d);color:#fff}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--mute)}
+.btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+main{padding:18px 0 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);font-weight:650}
+label.f{display:block;font-size:12.5px;color:var(--mute);margin-bottom:3px;font-weight:550}
+input[type=text],select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px}
+input[type=text]:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;background:var(--card)}
+.grid{display:grid;gap:10px 12px}
+.g-prof{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.chk{display:flex;align-items:center;gap:7px;font-size:14px;padding-top:20px}
+.chk input{width:16px;height:16px;accent-color:var(--brand)}
+.hint{color:var(--mute);font-size:13px;margin:6px 0 0}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.cls-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cls-head input{width:110px;font-weight:700;font-size:17px;text-align:center}
+.cls-head .sp{flex:1}
+.cls-head .count{color:var(--mute);font-size:13px}
+.stu{border-top:1px solid var(--line);padding:11px 0}
+.stu:first-of-type{border-top:0}
+.stu-top{display:flex;align-items:center;gap:8px}
+.stu-top .no{color:var(--mute);width:24px;text-align:right;font-variant-numeric:tabular-nums}
+.stu-top .nm{font-weight:650;flex:1;min-width:0}
+.stu-top .nm input{font-weight:650;background:transparent;border-color:transparent;padding:3px 6px}
+.stu-top .nm input:hover{border-color:var(--line)}
+.badge{font-size:11.5px;color:var(--warn);border:1px solid var(--warn);border-radius:20px;padding:0 7px}
+textarea.txt{margin-top:7px;min-height:64px;resize:vertical;line-height:1.55;text-align:justify}
+.stu .settings{display:none;margin-top:8px;padding:12px;background:var(--bg);border-radius:9px}
+.stu.open .settings{display:block}
+.empty{color:var(--mute);text-align:center;padding:18px 0}
+.add-box textarea{min-height:90px}
+.preview{display:none}
+.page{background:#fff;color:#000;width:100%;max-width:794px;margin:0 auto;padding:60px 64px;box-shadow:0 2px 14px rgba(0,0,0,.18);font:16px/1.3 Calibri,Carlito,"Segoe UI",sans-serif}
+.page p{margin:0 0 8px}
+.page .c{text-align:center;font-weight:700}
+.page ol{margin:0 0 8px;padding-left:36px}
+.page li{text-align:justify;margin:0}
+.page li b{font-weight:700}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;padding:9px 16px;border-radius:9px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;font-size:14px}
+#toast.show{opacity:.95}
+.stat{color:var(--mute);font-size:13px}
+@media (max-width:640px){.page{padding:28px 22px}.top .wrap{gap:8px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Veli Toplantısı Rapor Otomasyonu<small>Öğrencileri girin, cümleler otomatik yazılsın, Word dosyasını indirin.</small></h1>
+    <div class="tabs" role="tablist">
+      <button id="tabEdit" class="on" role="tab">Düzenle</button>
+      <button id="tabPrev" role="tab">Önizleme</button>
+    </div>
+    <button class="btn primary" id="btnDocx">Word (.docx) indir</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="editView">
+    <section class="card">
+      <h2>Rapor başlığı</h2>
+      <label class="f" for="title">Başlık (Word'de ortalanmış ve kalın çıkar)</label>
+      <input type="text" id="title">
+    </section>
+
+    <section class="card">
+      <h2>Varsayılan anlatım profili</h2>
+      <p class="hint" style="margin:0 0 10px">Her yeni öğrenci bu profille eklenir. Buradaki bir değişikliği mevcut öğrencilere uygulamak için aşağıdaki düğmeyi kullanın. İstisnalar için öğrencinin kendi “Ayarlar” bölümünü açın.</p>
+      <div id="defProfile"></div>
+      <div class="row-actions">
+        <button class="btn" id="btnApplyAll">Varsayılanı tüm öğrencilere uygula</button>
+        <button class="btn" id="btnRerollAll">Tüm cümleleri yeniden yaz</button>
+        <span class="stat" id="stat" style="align-self:center"></span>
+      </div>
+    </section>
+
+    <div id="classes"></div>
+
+    <div class="row-actions" style="margin-top:0">
+      <button class="btn" id="btnAddClass">+ Sınıf ekle</button>
+      <button class="btn ghost" id="btnSave">Yedeği indir (.json)</button>
+      <button class="btn ghost" id="btnLoad">Yedek yükle</button>
+      <button class="btn ghost danger" id="btnReset">Hepsini sıfırla</button>
+      <input type="file" id="fileLoad" accept=".json,application/json" hidden>
+    </div>
+  </div>
+
+  <div id="prevView" class="preview"><div class="page" id="page"></div></div>
+</main>
+<div id="toast"></div>
+
+<script>
+/* ====================== Word şablon parçaları (örnek dosyadan) ====================== */
+const PARTS = {"contentTypes": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/><Override PartName=\"/word/numbering.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml\"/><Override PartName=\"/word/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/><Override PartName=\"/word/settings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml\"/><Override PartName=\"/word/webSettings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml\"/><Override PartName=\"/word/fontTable.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml\"/><Override PartName=\"/word/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/><Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/><Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/><\/Types>", "rootRels": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/><\/Relationships>", "docRels": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings\" Target=\"settings.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering\" Target=\"numbering.xml\"/><Relationship Id=\"rId6\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/><Relationship Id=\"rId5\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable\" Target=\"fontTable.xml\"/><Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings\" Target=\"webSettings.xml\"/><\/Relationships>", "numberingHead": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:numbering xmlns:wpc=\"http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas\" xmlns:cx=\"http://schemas.microsoft.com/office/drawing/2014/chartex\" xmlns:cx1=\"http://schemas.microsoft.com/office/drawing/2015/9/8/chartex\" xmlns:cx2=\"http://schemas.microsoft.com/office/drawing/2015/10/21/chartex\" xmlns:cx3=\"http://schemas.microsoft.com/office/drawing/2016/5/9/chartex\" xmlns:cx4=\"http://schemas.microsoft.com/office/drawing/2016/5/10/chartex\" xmlns:cx5=\"http://schemas.microsoft.com/office/drawing/2016/5/11/chartex\" xmlns:cx6=\"http://schemas.microsoft.com/office/drawing/2016/5/12/chartex\" xmlns:cx7=\"http://schemas.microsoft.com/office/drawing/2016/5/13/chartex\" xmlns:cx8=\"http://schemas.microsoft.com/office/drawing/2016/5/14/chartex\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:aink=\"http://schemas.microsoft.com/office/drawing/2016/ink\" xmlns:am3d=\"http://schemas.microsoft.com/office/drawing/2017/model3d\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:wp14=\"http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" xmlns:wpg=\"http://schemas.microsoft.com/office/word/2010/wordprocessingGroup\" xmlns:wpi=\"http://schemas.microsoft.com/office/word/2010/wordprocessingInk\" xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\" xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\" mc:Ignorable=\"w14 w15 w16se w16cid wp14\"><w:abstractNum w:abstractNumId=\"0\" w15:restartNumberingAfterBreak=\"0\"><w:nsid w:val=\"10C34437\"/><w:multiLevelType w:val=\"hybridMultilevel\"/><w:tmpl w:val=\"81C61D76\"/><w:lvl w:ilvl=\"0\" w:tplc=\"041F000F\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/><\/w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><\/w:rPr><\/w:lvl><w:lvl w:ilvl=\"1\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%2.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"2\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%3.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"3\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%4.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2880\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"4\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%5.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"3600\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"5\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%6.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"4320\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"6\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%7.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5040\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"7\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%8.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5760\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"8\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%9.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"6480\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><\/w:abstractNum><w:abstractNum w:abstractNumId=\"1\" w15:restartNumberingAfterBreak=\"0\"><w:nsid w:val=\"1804132C\"/><w:multiLevelType w:val=\"hybridMultilevel\"/><w:tmpl w:val=\"F274CD42\"/><w:lvl w:ilvl=\"0\" w:tplc=\"041F000F\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/><\/w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><\/w:rPr><\/w:lvl><w:lvl w:ilvl=\"1\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%2.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"2\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%3.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"3\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%4.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2880\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"4\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%5.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"3600\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"5\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%6.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"4320\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"6\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%7.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5040\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"7\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%8.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5760\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"8\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%9.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"6480\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><\/w:abstractNum><w:abstractNum w:abstractNumId=\"2\" w15:restartNumberingAfterBreak=\"0\"><w:nsid w:val=\"193E1848\"/><w:multiLevelType w:val=\"hybridMultilevel\"/><w:tmpl w:val=\"2F6EDA2E\"/><w:lvl w:ilvl=\"0\" w:tplc=\"041F000F\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/><\/w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><\/w:rPr><\/w:lvl><w:lvl w:ilvl=\"1\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%2.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"2\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%3.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"3\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%4.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2880\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"4\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%5.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"3600\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"5\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%6.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"4320\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"6\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%7.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5040\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"7\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%8.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5760\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"8\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%9.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"6480\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><\/w:abstractNum><w:abstractNum w:abstractNumId=\"3\" w15:restartNumberingAfterBreak=\"0\"><w:nsid w:val=\"34612479\"/><w:multiLevelType w:val=\"hybridMultilevel\"/><w:tmpl w:val=\"E3EA0928\"/><w:lvl w:ilvl=\"0\" w:tplc=\"041F000F\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/><\/w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><\/w:rPr><\/w:lvl><w:lvl w:ilvl=\"1\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%2.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"2\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%3.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"3\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%4.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2880\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"4\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%5.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"3600\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"5\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%6.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"4320\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"6\" w:tplc=\"041F000F\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%7.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5040\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"7\" w:tplc=\"041F0019\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerLetter\"/><w:lvlText w:val=\"%8.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"5760\" w:hanging=\"360\"/><\/w:pPr><\/w:lvl><w:lvl w:ilvl=\"8\" w:tplc=\"041F001B\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"lowerRoman\"/><w:lvlText w:val=\"%9.\"/><w:lvlJc w:val=\"right\"/><w:pPr><w:ind w:left=\"6480\" w:hanging=\"180\"/><\/w:pPr><\/w:lvl><\/w:abstractNum>", "styles": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" mc:Ignorable=\"w14 w15 w16se w16cid\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/><w:lang w:val=\"tr-TR\" w:eastAsia=\"en-US\" w:bidi=\"ar-SA\"/><\/w:rPr><\/w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after=\"160\" w:line=\"259\" w:lineRule=\"auto\"/><\/w:pPr><\/w:pPrDefault><\/w:docDefaults><w:latentStyles w:defLockedState=\"0\" w:defUIPriority=\"99\" w:defSemiHidden=\"0\" w:defUnhideWhenUsed=\"0\" w:defQFormat=\"0\" w:count=\"375\"><w:lsdException w:name=\"Normal\" w:uiPriority=\"0\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 1\" w:uiPriority=\"9\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 2\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 3\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 4\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 5\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 6\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 7\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 8\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"heading 9\" w:semiHidden=\"1\" w:uiPriority=\"9\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"index 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 6\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 7\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 8\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index 9\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 1\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 2\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 3\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 4\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 5\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 6\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 7\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 8\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toc 9\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Normal Indent\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"footnote text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"annotation text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"header\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"footer\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"index heading\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"caption\" w:semiHidden=\"1\" w:uiPriority=\"35\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"table of figures\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"envelope address\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"envelope return\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"footnote reference\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"annotation reference\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"line number\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"page number\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"endnote reference\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"endnote text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"table of authorities\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"macro\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"toa heading\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Bullet\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Number\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Bullet 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Bullet 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Bullet 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Bullet 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Number 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Number 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Number 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Number 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Title\" w:uiPriority=\"10\" w:qFormat=\"1\"/><w:lsdException w:name=\"Closing\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Signature\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Default Paragraph Font\" w:semiHidden=\"1\" w:uiPriority=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text Indent\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Continue\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Continue 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Continue 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Continue 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"List Continue 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Message Header\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Subtitle\" w:uiPriority=\"11\" w:qFormat=\"1\"/><w:lsdException w:name=\"Salutation\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Date\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text First Indent\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text First Indent 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Note Heading\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text Indent 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Body Text Indent 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Block Text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Hyperlink\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"FollowedHyperlink\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Strong\" w:uiPriority=\"22\" w:qFormat=\"1\"/><w:lsdException w:name=\"Emphasis\" w:uiPriority=\"20\" w:qFormat=\"1\"/><w:lsdException w:name=\"Document Map\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Plain Text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"E-mail Signature\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Top of Form\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Bottom of Form\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Normal (Web)\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Acronym\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Address\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Cite\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Code\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Definition\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Keyboard\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Preformatted\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Sample\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Typewriter\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"HTML Variable\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Normal Table\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"annotation subject\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"No List\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Outline List 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Outline List 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Outline List 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Simple 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Simple 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Simple 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Classic 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Classic 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Classic 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Classic 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Colorful 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Colorful 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Colorful 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Columns 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Columns 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Columns 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Columns 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Columns 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 6\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 7\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid 8\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 4\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 5\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 6\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 7\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table List 8\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table 3D effects 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table 3D effects 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table 3D effects 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Contemporary\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Elegant\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Professional\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Subtle 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Subtle 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Web 1\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Web 2\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Web 3\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Balloon Text\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Table Grid\" w:uiPriority=\"39\"/><w:lsdException w:name=\"Table Theme\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Placeholder Text\" w:semiHidden=\"1\"/><w:lsdException w:name=\"No Spacing\" w:uiPriority=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"Light Shading\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Medium List 2\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Light Shading Accent 1\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List Accent 1\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid Accent 1\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1 Accent 1\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2 Accent 1\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1 Accent 1\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Revision\" w:semiHidden=\"1\"/><w:lsdException w:name=\"List Paragraph\" w:uiPriority=\"34\" w:qFormat=\"1\"/><w:lsdException w:name=\"Quote\" w:uiPriority=\"29\" w:qFormat=\"1\"/><w:lsdException w:name=\"Intense Quote\" w:uiPriority=\"30\" w:qFormat=\"1\"/><w:lsdException w:name=\"Medium List 2 Accent 1\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1 Accent 1\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2 Accent 1\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3 Accent 1\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List Accent 1\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading Accent 1\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List Accent 1\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid Accent 1\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Light Shading Accent 2\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List Accent 2\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid Accent 2\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1 Accent 2\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2 Accent 2\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1 Accent 2\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Medium List 2 Accent 2\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1 Accent 2\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2 Accent 2\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3 Accent 2\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List Accent 2\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading Accent 2\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List Accent 2\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid Accent 2\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Light Shading Accent 3\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List Accent 3\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid Accent 3\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1 Accent 3\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2 Accent 3\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1 Accent 3\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Medium List 2 Accent 3\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1 Accent 3\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2 Accent 3\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3 Accent 3\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List Accent 3\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading Accent 3\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List Accent 3\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid Accent 3\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Light Shading Accent 4\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List Accent 4\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid Accent 4\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1 Accent 4\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2 Accent 4\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1 Accent 4\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Medium List 2 Accent 4\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1 Accent 4\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2 Accent 4\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3 Accent 4\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List Accent 4\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading Accent 4\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List Accent 4\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid Accent 4\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Light Shading Accent 5\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List Accent 5\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid Accent 5\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1 Accent 5\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2 Accent 5\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1 Accent 5\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Medium List 2 Accent 5\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1 Accent 5\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2 Accent 5\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3 Accent 5\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List Accent 5\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading Accent 5\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List Accent 5\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid Accent 5\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Light Shading Accent 6\" w:uiPriority=\"60\"/><w:lsdException w:name=\"Light List Accent 6\" w:uiPriority=\"61\"/><w:lsdException w:name=\"Light Grid Accent 6\" w:uiPriority=\"62\"/><w:lsdException w:name=\"Medium Shading 1 Accent 6\" w:uiPriority=\"63\"/><w:lsdException w:name=\"Medium Shading 2 Accent 6\" w:uiPriority=\"64\"/><w:lsdException w:name=\"Medium List 1 Accent 6\" w:uiPriority=\"65\"/><w:lsdException w:name=\"Medium List 2 Accent 6\" w:uiPriority=\"66\"/><w:lsdException w:name=\"Medium Grid 1 Accent 6\" w:uiPriority=\"67\"/><w:lsdException w:name=\"Medium Grid 2 Accent 6\" w:uiPriority=\"68\"/><w:lsdException w:name=\"Medium Grid 3 Accent 6\" w:uiPriority=\"69\"/><w:lsdException w:name=\"Dark List Accent 6\" w:uiPriority=\"70\"/><w:lsdException w:name=\"Colorful Shading Accent 6\" w:uiPriority=\"71\"/><w:lsdException w:name=\"Colorful List Accent 6\" w:uiPriority=\"72\"/><w:lsdException w:name=\"Colorful Grid Accent 6\" w:uiPriority=\"73\"/><w:lsdException w:name=\"Subtle Emphasis\" w:uiPriority=\"19\" w:qFormat=\"1\"/><w:lsdException w:name=\"Intense Emphasis\" w:uiPriority=\"21\" w:qFormat=\"1\"/><w:lsdException w:name=\"Subtle Reference\" w:uiPriority=\"31\" w:qFormat=\"1\"/><w:lsdException w:name=\"Intense Reference\" w:uiPriority=\"32\" w:qFormat=\"1\"/><w:lsdException w:name=\"Book Title\" w:uiPriority=\"33\" w:qFormat=\"1\"/><w:lsdException w:name=\"Bibliography\" w:semiHidden=\"1\" w:uiPriority=\"37\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"TOC Heading\" w:semiHidden=\"1\" w:uiPriority=\"39\" w:unhideWhenUsed=\"1\" w:qFormat=\"1\"/><w:lsdException w:name=\"Plain Table 1\" w:uiPriority=\"41\"/><w:lsdException w:name=\"Plain Table 2\" w:uiPriority=\"42\"/><w:lsdException w:name=\"Plain Table 3\" w:uiPriority=\"43\"/><w:lsdException w:name=\"Plain Table 4\" w:uiPriority=\"44\"/><w:lsdException w:name=\"Plain Table 5\" w:uiPriority=\"45\"/><w:lsdException w:name=\"Grid Table Light\" w:uiPriority=\"40\"/><w:lsdException w:name=\"Grid Table 1 Light\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Grid Table 1 Light Accent 1\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2 Accent 1\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3 Accent 1\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4 Accent 1\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark Accent 1\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful Accent 1\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful Accent 1\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Grid Table 1 Light Accent 2\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2 Accent 2\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3 Accent 2\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4 Accent 2\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark Accent 2\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful Accent 2\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful Accent 2\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Grid Table 1 Light Accent 3\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2 Accent 3\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3 Accent 3\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4 Accent 3\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark Accent 3\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful Accent 3\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful Accent 3\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Grid Table 1 Light Accent 4\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2 Accent 4\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3 Accent 4\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4 Accent 4\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark Accent 4\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful Accent 4\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful Accent 4\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Grid Table 1 Light Accent 5\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2 Accent 5\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3 Accent 5\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4 Accent 5\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark Accent 5\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful Accent 5\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful Accent 5\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Grid Table 1 Light Accent 6\" w:uiPriority=\"46\"/><w:lsdException w:name=\"Grid Table 2 Accent 6\" w:uiPriority=\"47\"/><w:lsdException w:name=\"Grid Table 3 Accent 6\" w:uiPriority=\"48\"/><w:lsdException w:name=\"Grid Table 4 Accent 6\" w:uiPriority=\"49\"/><w:lsdException w:name=\"Grid Table 5 Dark Accent 6\" w:uiPriority=\"50\"/><w:lsdException w:name=\"Grid Table 6 Colorful Accent 6\" w:uiPriority=\"51\"/><w:lsdException w:name=\"Grid Table 7 Colorful Accent 6\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light Accent 1\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2 Accent 1\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3 Accent 1\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4 Accent 1\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark Accent 1\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful Accent 1\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful Accent 1\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light Accent 2\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2 Accent 2\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3 Accent 2\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4 Accent 2\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark Accent 2\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful Accent 2\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful Accent 2\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light Accent 3\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2 Accent 3\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3 Accent 3\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4 Accent 3\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark Accent 3\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful Accent 3\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful Accent 3\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light Accent 4\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2 Accent 4\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3 Accent 4\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4 Accent 4\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark Accent 4\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful Accent 4\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful Accent 4\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light Accent 5\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2 Accent 5\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3 Accent 5\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4 Accent 5\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark Accent 5\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful Accent 5\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful Accent 5\" w:uiPriority=\"52\"/><w:lsdException w:name=\"List Table 1 Light Accent 6\" w:uiPriority=\"46\"/><w:lsdException w:name=\"List Table 2 Accent 6\" w:uiPriority=\"47\"/><w:lsdException w:name=\"List Table 3 Accent 6\" w:uiPriority=\"48\"/><w:lsdException w:name=\"List Table 4 Accent 6\" w:uiPriority=\"49\"/><w:lsdException w:name=\"List Table 5 Dark Accent 6\" w:uiPriority=\"50\"/><w:lsdException w:name=\"List Table 6 Colorful Accent 6\" w:uiPriority=\"51\"/><w:lsdException w:name=\"List Table 7 Colorful Accent 6\" w:uiPriority=\"52\"/><w:lsdException w:name=\"Mention\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Smart Hyperlink\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Hashtag\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><w:lsdException w:name=\"Unresolved Mention\" w:semiHidden=\"1\" w:unhideWhenUsed=\"1\"/><\/w:latentStyles><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/><\/w:style><w:style w:type=\"character\" w:default=\"1\" w:styleId=\"VarsaylanParagrafYazTipi\"><w:name w:val=\"Default Paragraph Font\"/><w:uiPriority w:val=\"1\"/><w:semiHidden/><w:unhideWhenUsed/><\/w:style><w:style w:type=\"table\" w:default=\"1\" w:styleId=\"NormalTablo\"><w:name w:val=\"Normal Table\"/><w:uiPriority w:val=\"99\"/><w:semiHidden/><w:unhideWhenUsed/><w:tblPr><w:tblInd w:w=\"0\" w:type=\"dxa\"/><w:tblCellMar><w:top w:w=\"0\" w:type=\"dxa\"/><w:left w:w=\"108\" w:type=\"dxa\"/><w:bottom w:w=\"0\" w:type=\"dxa\"/><w:right w:w=\"108\" w:type=\"dxa\"/><\/w:tblCellMar><\/w:tblPr><\/w:style><w:style w:type=\"numbering\" w:default=\"1\" w:styleId=\"ListeYok\"><w:name w:val=\"No List\"/><w:uiPriority w:val=\"99\"/><w:semiHidden/><w:unhideWhenUsed/><\/w:style><w:style w:type=\"paragraph\" w:styleId=\"ListeParagraf\"><w:name w:val=\"List Paragraph\"/><w:basedOn w:val=\"Normal\"/><w:uiPriority w:val=\"34\"/><w:qFormat/><w:rsid w:val=\"002D03D5\"/><w:pPr><w:ind w:left=\"720\"/><w:contextualSpacing/><\/w:pPr><\/w:style><\/w:styles>", "settings": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:settings xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" xmlns:sl=\"http://schemas.openxmlformats.org/schemaLibrary/2006/main\" mc:Ignorable=\"w14 w15 w16se w16cid\"><w:zoom w:percent=\"100\"/><w:proofState w:spelling=\"clean\" w:grammar=\"clean\"/><w:defaultTabStop w:val=\"708\"/><w:hyphenationZone w:val=\"425\"/><w:characterSpacingControl w:val=\"doNotCompress\"/><w:compat><w:compatSetting w:name=\"compatibilityMode\" w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"15\"/><w:compatSetting w:name=\"overrideTableStyleFontSizeAndJustification\" w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"1\"/><w:compatSetting w:name=\"enableOpenTypeFeatures\" w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"1\"/><w:compatSetting w:name=\"doNotFlipMirrorIndents\" w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"1\"/><w:compatSetting w:name=\"differentiateMultirowTableHeaders\" w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"1\"/><w:compatSetting w:name=\"useWord2013TrackBottomHyphenation\" w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"0\"/><\/w:compat><w:rsids><w:rsidRoot w:val=\"00B8702C\"/><w:rsid w:val=\"000A2860\"/><w:rsid w:val=\"001020CD\"/><w:rsid w:val=\"00172C9F\"/><w:rsid w:val=\"00184CD9\"/><w:rsid w:val=\"001C61B5\"/><w:rsid w:val=\"00257810\"/><w:rsid w:val=\"002719FB\"/><w:rsid w:val=\"002728FC\"/><w:rsid w:val=\"00287591\"/><w:rsid w:val=\"002D03D5\"/><w:rsid w:val=\"002E032A\"/><w:rsid w:val=\"0034513A\"/><w:rsid w:val=\"00347F1E\"/><w:rsid w:val=\"003C1082\"/><w:rsid w:val=\"004C4B59\"/><w:rsid w:val=\"00500C8A\"/><w:rsid w:val=\"00504FF5\"/><w:rsid w:val=\"00547E4E\"/><w:rsid w:val=\"00563D33\"/><w:rsid w:val=\"005932A9\"/><w:rsid w:val=\"00674F8C\"/><w:rsid w:val=\"007157F6\"/><w:rsid w:val=\"007423F7\"/><w:rsid w:val=\"0082103F\"/><w:rsid w:val=\"00852F7A\"/><w:rsid w:val=\"00A179E9\"/><w:rsid w:val=\"00A3548A\"/><w:rsid w:val=\"00A63F01\"/><w:rsid w:val=\"00A702EB\"/><w:rsid w:val=\"00B8702C\"/><w:rsid w:val=\"00D00075\"/><w:rsid w:val=\"00D17997\"/><w:rsid w:val=\"00D64F42\"/><w:rsid w:val=\"00DB53AA\"/><w:rsid w:val=\"00DC57F8\"/><w:rsid w:val=\"00E07010\"/><w:rsid w:val=\"00E2562B\"/><w:rsid w:val=\"00F51050\"/><w:rsid w:val=\"00FB2095\"/><w:rsid w:val=\"00FD306B\"/><\/w:rsids><m:mathPr><m:mathFont m:val=\"Cambria Math\"/><m:brkBin m:val=\"before\"/><m:brkBinSub m:val=\"--\"/><m:smallFrac m:val=\"0\"/><m:dispDef/><m:lMargin m:val=\"0\"/><m:rMargin m:val=\"0\"/><m:defJc m:val=\"centerGroup\"/><m:wrapIndent m:val=\"1440\"/><m:intLim m:val=\"subSup\"/><m:naryLim m:val=\"undOvr\"/><\/m:mathPr><w:themeFontLang w:val=\"tr-TR\"/><w:clrSchemeMapping w:bg1=\"light1\" w:t1=\"dark1\" w:bg2=\"light2\" w:t2=\"dark2\" w:accent1=\"accent1\" w:accent2=\"accent2\" w:accent3=\"accent3\" w:accent4=\"accent4\" w:accent5=\"accent5\" w:accent6=\"accent6\" w:hyperlink=\"hyperlink\" w:followedHyperlink=\"followedHyperlink\"/><w:shapeDefaults><o:shapedefaults v:ext=\"edit\" spidmax=\"1026\"/><o:shapelayout v:ext=\"edit\"><o:idmap v:ext=\"edit\" data=\"1\"/><\/o:shapelayout><\/w:shapeDefaults><w:decimalSymbol w:val=\",\"/><w:listSeparator w:val=\";\"/><w14:docId w14:val=\"3FBDB4E4\"/><w15:chartTrackingRefBased/><w15:docId w15:val=\"{1552D664-823E-47AA-A5D7-4271B3EB8795}\"/><\/w:settings>", "webSettings": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:webSettings xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" mc:Ignorable=\"w14 w15 w16se w16cid\"><w:optimizeForBrowser/><w:allowPNG/><\/w:webSettings>", "fontTable": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:fonts xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:w16cid=\"http://schemas.microsoft.com/office/word/2016/wordml/cid\" xmlns:w16se=\"http://schemas.microsoft.com/office/word/2015/wordml/symex\" mc:Ignorable=\"w14 w15 w16se w16cid\"><w:font w:name=\"Times New Roman\"><w:panose1 w:val=\"02020603050405020304\"/><w:charset w:val=\"00\"/><w:family w:val=\"roman\"/><w:pitch w:val=\"variable\"/><w:sig w:usb0=\"E0002EFF\" w:usb1=\"C000785B\" w:usb2=\"00000009\" w:usb3=\"00000000\" w:csb0=\"000001FF\" w:csb1=\"00000000\"/><\/w:font><w:font w:name=\"Calibri\"><w:panose1 w:val=\"020F0502020204030204\"/><w:charset w:val=\"A2\"/><w:family w:val=\"swiss\"/><w:pitch w:val=\"variable\"/><w:sig w:usb0=\"E4002EFF\" w:usb1=\"C200247B\" w:usb2=\"00000009\" w:usb3=\"00000000\" w:csb0=\"000001FF\" w:csb1=\"00000000\"/><\/w:font><w:font w:name=\"Calibri Light\"><w:panose1 w:val=\"020F0302020204030204\"/><w:charset w:val=\"A2\"/><w:family w:val=\"swiss\"/><w:pitch w:val=\"variable\"/><w:sig w:usb0=\"E4002EFF\" w:usb1=\"C200247B\" w:usb2=\"00000009\" w:usb3=\"00000000\" w:csb0=\"000001FF\" w:csb1=\"00000000\"/><\/w:font><\/w:fonts>", "theme": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<a:theme xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office Teması\"><a:themeElements><a:clrScheme name=\"Office\"><a:dk1><a:sysClr val=\"windowText\" lastClr=\"000000\"/><\/a:dk1><a:lt1><a:sysClr val=\"window\" lastClr=\"FFFFFF\"/><\/a:lt1><a:dk2><a:srgbClr val=\"44546A\"/><\/a:dk2><a:lt2><a:srgbClr val=\"E7E6E6\"/><\/a:lt2><a:accent1><a:srgbClr val=\"4472C4\"/><\/a:accent1><a:accent2><a:srgbClr val=\"ED7D31\"/><\/a:accent2><a:accent3><a:srgbClr val=\"A5A5A5\"/><\/a:accent3><a:accent4><a:srgbClr val=\"FFC000\"/><\/a:accent4><a:accent5><a:srgbClr val=\"5B9BD5\"/><\/a:accent5><a:accent6><a:srgbClr val=\"70AD47\"/><\/a:accent6><a:hlink><a:srgbClr val=\"0563C1\"/><\/a:hlink><a:folHlink><a:srgbClr val=\"954F72\"/><\/a:folHlink><\/a:clrScheme><a:fontScheme name=\"Office\"><a:majorFont><a:latin typeface=\"Calibri Light\" panose=\"020F0302020204030204\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/><a:font script=\"Jpan\" typeface=\"游ゴシック Light\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/><a:font script=\"Hans\" typeface=\"等线 Light\"/><a:font script=\"Hant\" typeface=\"新細明體\"/><a:font script=\"Arab\" typeface=\"Times New Roman\"/><a:font script=\"Hebr\" typeface=\"Times New Roman\"/><a:font script=\"Thai\" typeface=\"Angsana New\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/><a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/><a:font script=\"Khmr\" typeface=\"MoolBoran\"/><a:font script=\"Knda\" typeface=\"Tunga\"/><a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/><a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/><a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/><a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/><a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/><a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Times New Roman\"/><a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/><a:font script=\"Geor\" typeface=\"Sylfaen\"/><a:font script=\"Armn\" typeface=\"Arial\"/><a:font script=\"Bugi\" typeface=\"Leelawadee UI\"/><a:font script=\"Bopo\" typeface=\"Microsoft JhengHei\"/><a:font script=\"Java\" typeface=\"Javanese Text\"/><a:font script=\"Lisu\" typeface=\"Segoe UI\"/><a:font script=\"Mymr\" typeface=\"Myanmar Text\"/><a:font script=\"Nkoo\" typeface=\"Ebrima\"/><a:font script=\"Olck\" typeface=\"Nirmala UI\"/><a:font script=\"Osma\" typeface=\"Ebrima\"/><a:font script=\"Phag\" typeface=\"Phagspa\"/><a:font script=\"Syrn\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Syrj\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Syre\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Sora\" typeface=\"Nirmala UI\"/><a:font script=\"Tale\" typeface=\"Microsoft Tai Le\"/><a:font script=\"Talu\" typeface=\"Microsoft New Tai Lue\"/><a:font script=\"Tfng\" typeface=\"Ebrima\"/><\/a:majorFont><a:minorFont><a:latin typeface=\"Calibri\" panose=\"020F0502020204030204\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/><a:font script=\"Jpan\" typeface=\"游明朝\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/><a:font script=\"Hans\" typeface=\"等线\"/><a:font script=\"Hant\" typeface=\"新細明體\"/><a:font script=\"Arab\" typeface=\"Arial\"/><a:font script=\"Hebr\" typeface=\"Arial\"/><a:font script=\"Thai\" typeface=\"Cordia New\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/><a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/><a:font script=\"Khmr\" typeface=\"DaunPenh\"/><a:font script=\"Knda\" typeface=\"Tunga\"/><a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/><a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/><a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/><a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/><a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/><a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Arial\"/><a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/><a:font script=\"Geor\" typeface=\"Sylfaen\"/><a:font script=\"Armn\" typeface=\"Arial\"/><a:font script=\"Bugi\" typeface=\"Leelawadee UI\"/><a:font script=\"Bopo\" typeface=\"Microsoft JhengHei\"/><a:font script=\"Java\" typeface=\"Javanese Text\"/><a:font script=\"Lisu\" typeface=\"Segoe UI\"/><a:font script=\"Mymr\" typeface=\"Myanmar Text\"/><a:font script=\"Nkoo\" typeface=\"Ebrima\"/><a:font script=\"Olck\" typeface=\"Nirmala UI\"/><a:font script=\"Osma\" typeface=\"Ebrima\"/><a:font script=\"Phag\" typeface=\"Phagspa\"/><a:font script=\"Syrn\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Syrj\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Syre\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Sora\" typeface=\"Nirmala UI\"/><a:font script=\"Tale\" typeface=\"Microsoft Tai Le\"/><a:font script=\"Talu\" typeface=\"Microsoft New Tai Lue\"/><a:font script=\"Tfng\" typeface=\"Ebrima\"/><\/a:minorFont><\/a:fontScheme><a:fmtScheme name=\"Office\"><a:fillStyleLst><a:solidFill><a:schemeClr val=\"phClr\"/><\/a:solidFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:lumMod val=\"110000\"/><a:satMod val=\"105000\"/><a:tint val=\"67000\"/><\/a:schemeClr><\/a:gs><a:gs pos=\"50000\"><a:schemeClr val=\"phClr\"><a:lumMod val=\"105000\"/><a:satMod val=\"103000\"/><a:tint val=\"73000\"/><\/a:schemeClr><\/a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:lumMod val=\"105000\"/><a:satMod val=\"109000\"/><a:tint val=\"81000\"/><\/a:schemeClr><\/a:gs><\/a:gsLst><a:lin ang=\"5400000\" scaled=\"0\"/><\/a:gradFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:satMod val=\"103000\"/><a:lumMod val=\"102000\"/><a:tint val=\"94000\"/><\/a:schemeClr><\/a:gs><a:gs pos=\"50000\"><a:schemeClr val=\"phClr\"><a:satMod val=\"110000\"/><a:lumMod val=\"100000\"/><a:shade val=\"100000\"/><\/a:schemeClr><\/a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:lumMod val=\"99000\"/><a:satMod val=\"120000\"/><a:shade val=\"78000\"/><\/a:schemeClr><\/a:gs><\/a:gsLst><a:lin ang=\"5400000\" scaled=\"0\"/><\/a:gradFill><\/a:fillStyleLst><a:lnStyleLst><a:ln w=\"6350\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/><\/a:solidFill><a:prstDash val=\"solid\"/><a:miter lim=\"800000\"/><\/a:ln><a:ln w=\"12700\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/><\/a:solidFill><a:prstDash val=\"solid\"/><a:miter lim=\"800000\"/><\/a:ln><a:ln w=\"19050\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/><\/a:solidFill><a:prstDash val=\"solid\"/><a:miter lim=\"800000\"/><\/a:ln><\/a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/><\/a:effectStyle><a:effectStyle><a:effectLst/><\/a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"57150\" dist=\"19050\" dir=\"5400000\" algn=\"ctr\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"63000\"/><\/a:srgbClr><\/a:outerShdw><\/a:effectLst><\/a:effectStyle><\/a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val=\"phClr\"/><\/a:solidFill><a:solidFill><a:schemeClr val=\"phClr\"><a:tint val=\"95000\"/><a:satMod val=\"170000\"/><\/a:schemeClr><\/a:solidFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"93000\"/><a:satMod val=\"150000\"/><a:shade val=\"98000\"/><a:lumMod val=\"102000\"/><\/a:schemeClr><\/a:gs><a:gs pos=\"50000\"><a:schemeClr val=\"phClr\"><a:tint val=\"98000\"/><a:satMod val=\"130000\"/><a:shade val=\"90000\"/><a:lumMod val=\"103000\"/><\/a:schemeClr><\/a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"63000\"/><a:satMod val=\"120000\"/><\/a:schemeClr><\/a:gs><\/a:gsLst><a:lin ang=\"5400000\" scaled=\"0\"/><\/a:gradFill><\/a:bgFillStyleLst><\/a:fmtScheme><\/a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/><a:extLst><a:ext uri=\"{05A4C25C-085E-4340-85A3-A5531E510DB2}\"><thm15:themeFamily xmlns:thm15=\"http://schemas.microsoft.com/office/thememl/2012/main\" name=\"Office Theme\" id=\"{62F939B6-93AF-4DB8-9C6B-D6C7DFDC589F}\" vid=\"{4A3C46E8-61CC-4603-A589-7422A47A8E4A}\"/><\/a:ext><\/a:extLst><\/a:theme>", "core": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcmitype=\"http://purl.org/dc/dcmitype/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><dc:title><\/dc:title><dc:subject><\/dc:subject><dc:creator>UFUK KORKMAZ<\/dc:creator><cp:keywords><\/cp:keywords><dc:description><\/dc:description><cp:lastModifiedBy>UFUK KORKMAZ<\/cp:lastModifiedBy><cp:revision>11<\/cp:revision><dcterms:created xsi:type=\"dcterms:W3CDTF\">2026-04-04T05:33:00Z<\/dcterms:created><dcterms:modified xsi:type=\"dcterms:W3CDTF\">2026-04-09T19:20:00Z<\/dcterms:modified><\/cp:coreProperties>", "app": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\"><Application>Microsoft Office Word<\/Application><AppVersion>16.0000<\/AppVersion><\/Properties>"};
+
+/* ====================== Seçenek tanımları ====================== */
+const OPT = {
+  kat:   [['cokiyi','Çok iyi'],['iyi','İyi'],['gelisim','İlk döneme göre gelişmiş'],['az','Az konuşuyor ama dinliyor'],['yok','Bahsetme']],
+  odev:  [['duzenli','Düzenli yapıyor'],['eksiksiz','Eksiksiz yapıyor'],['eksik','Bazen eksik/geç'],['yok','Bahsetme']],
+  ek:    [['tamam','Tamamlıyor'],['verilecek','Verilecek'],['yok','Bahsetme']],
+  kelime:[['duzenli','Düzenli çalışıyor'],['cokiyi','Çok iyi'],['yok','Bahsetme']],
+  sinav: [['cokiyi','Çok iyi'],['iyi','İyi'],['gelisim','İyiye gidiyor'],['gelisebilir','Daha iyi olabilir'],['paylasildi','Sadece paylaşıldı'],['yok','Bahsetme']],
+};
+const LABEL = {kat:'Sınıf içi katılım', odev:'Ödevler', ek:'Ek çalışmalar', kelime:'Kelime çalışması', sinav:'Sınav sonuçları'};
+const DEFAULT_PROFILE = {kat:'cokiyi', odev:'duzenli', ek:'tamam', kelime:'yok', sinav:'paylasildi', ekGorev:false, toefl:true, memnun:true, note:''};
+
+/* ====================== Cümle üretici ====================== */
+function rng(seed){ let a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const TR = 'tr-TR';
+const cap = s => s ? s.charAt(0).toLocaleUpperCase(TR) + s.slice(1) : s;
+
+const CL = {
+  kat: {
+    cokiyi: ['ders içi katılımının çok iyi olduğu','sınıf içi katılımının çok iyi olduğu','derse aktif katılım gösterdiği','sınıf içinde çok aktif rol aldığı'],
+    iyi: ['ders içi katılımının iyi olduğu','sınıf içi katılımının iyi olduğu','dersi iyi takip ettiği'],
+    gelisim: ['sınıf içi katılımının ilk döneme göre çok daha iyi olduğu','ders içi katılımının ilk döneme göre arttığı','ilk döneme kıyasla sınıf içinde daha etkin rol aldığı'],
+    az: ['sınıf içi katılımı az olsa da dersi etkin dinlediği','sınıf içinde çok aktif rol almasa da dersi dikkatle takip ettiği'],
+  },
+  odev: {
+    duzenli: ['ödevlerini düzenli yaptığı','ödevlerini her zaman düzenli yaptığı','ödevlerini zamanında yaptığı'],
+    eksiksiz: ['ödevlerini eksiksiz yaptığı','bütün ödevlerini eksiksiz yaptığı'],
+    eksik: ['zaman zaman ödevlerde eksik ya da gecikme olduğu ancak bunların hepsinin tamamlatıldığı'],
+  },
+  ek: { tamam: ['ek çalışmalarını tamamladığı','ek çalışmalarını düzenli tamamladığı','verilen ek çalışmaları eksiksiz yaptığı'] },
+  kelime: {
+    duzenli: ['kelime çalışmalarını düzenli yaptığı','kelimelere düzenli çalıştığı'],
+    cokiyi: ['kelime çalışmalarını çok iyi yerine getirdiği','kelime bilgisinin çok iyi olduğu'],
+  },
+  sinav: {
+    cokiyi: ['sınav sonuçlarının çok iyi olduğu','deneme sınav sonuçlarının çok iyi olduğu'],
+    iyi: ['sınav sonuçlarının iyi olduğu','deneme sınav sonuçlarının iyi olduğu'],
+    gelisim: ['sınav sonuçlarının iyiye gittiği','deneme sınav sonuçlarının her geçen gün daha iyiye gittiği'],
+    gelisebilir: ['sınav sonuçlarının daha iyi olabileceği, bu doğrultuda gerekli çalışmaların verildiği'],
+  },
+};
+const VERBS = ['dile getirildi','bilgisi verildi','bilgisi paylaşıldı','belirtildi','aktarıldı','bilgisi aktarıldı'];
+const INTRO = [
+  'Veliye öğrencinin sınıf içi değerlendirmesi yapıldı.',
+  'Veliye sınıf içi performansı ve ödevleri konusunda bilgilendirme yapıldı.',
+  'Öğrencinin ders içi performansı veliyle paylaşıldı.',
+];
+const INTRO_SINAV = ['Öğrencinin ders içi performansından ve sınav sonuçlarından veliye bahsedildi.'];
+const EK_VERILECEK = [
+  'Öğrenciye mevcut seviyesini daha iyi hale getirmek adına ek çalışmalar verileceği belirtildi.',
+  'Ek çalışmaların verilmeye devam edileceği ve evde de bu çalışmalara devam edilmesi gerektiği bilgisi paylaşıldı.',
+  'Gelişimini sürdürmesi için öğrenciye ek materyaller verileceği aktarıldı.',
+];
+const EK_GOREV = [
+  'Veliye yapılan çalışmalardan ve ek görevlendirmelerden bahsedildi.',
+  'Ek görevlendirmeler ve yürütülen çalışmalar hakkında veliye bilgi verildi.',
+];
+const SINAV_PAYLASILDI = ['Sınav sonuçları veliyle paylaşıldı.','Sınav sonuçları paylaşıldı.','Sınav sonuçlarına dair değerlendirme yapıldı.'];
+const TOEFL = ['TOEFL ile alakalı bilgilendirme yapıldı.','TOEFL ile ilgili bilgilendirme yapıldı.','TOEFL sınavı ile alakalı bilgi verildi.','TOEFL ile ilgili bilgi aktarımı yapıldı.','Veliye TOEFL sınavı ile ilgili bilgi verildi.'];
+const MEMNUN = ['Veli süreçten memnun olduğunu dile getirdi.','Veli sürecin gidişatından memnun olduğunu belirtti.','Veli yürütülen çalışmalardan memnun kaldığını ifade etti.'];
+
+function joinClauses(a){
+  if (a.length === 1) return a[0];
+  return a.slice(0, -1).join(', ') + ' ve ' + a[a.length - 1];
+}
+
+function generate(p, seed){
+  const r = rng(seed);
+  const pick = arr => arr[Math.floor(r() * arr.length)];
+  const out = [];
+  const usedVerbs = [];
+  const verb = () => { let v, n = 0; do { v = pick(VERBS); n++; } while (usedVerbs.includes(v) && n < 12); usedVerbs.push(v); return v; };
+
+  const s1 = [];
+  if (CL.kat[p.kat])   s1.push(pick(CL.kat[p.kat]));
+  if (CL.odev[p.odev]) s1.push(pick(CL.odev[p.odev]));
+  if (CL.ek[p.ek])     s1.push(pick(CL.ek[p.ek]));
+  const s2 = [];
+  if (CL.kelime[p.kelime]) s2.push(pick(CL.kelime[p.kelime]));
+  if (CL.sinav[p.sinav])   s2.push(pick(CL.sinav[p.sinav]));
+
+  // giriş cümlesi (yaklaşık yarı yarıya)
+  let introSinav = false;
+  if (r() < 0.4) {
+    if (p.sinav !== 'yok' && r() < 0.4) { out.push(pick(INTRO_SINAV)); introSinav = true; }
+    else out.push(pick(INTRO));
+  }
+  if (s1.length) out.push(cap(joinClauses(s1)) + ' ' + verb() + '.');
+  if (p.ek === 'verilecek') out.push(pick(EK_VERILECEK));
+  if (p.ekGorev) out.push(pick(EK_GOREV));
+  if (s2.length) out.push(cap(joinClauses(s2)) + ' ' + verb() + '.');
+  if (p.sinav === 'paylasildi' && !introSinav) out.push(pick(SINAV_PAYLASILDI));
+  if (p.toefl) out.push(pick(TOEFL));
+  if (p.memnun) out.push(pick(MEMNUN));
+  if (p.note && p.note.trim()) out.push(p.note.trim());
+  return out.join(' ');
+}
+
+/* ====================== Durum ====================== */
+const KEY = 'veliRaporOtomasyonu.v1';
+const newSeed = () => Math.floor(Math.random() * 4294967295);
+let S = null;
+
+function freshState(){
+  return {
+    title: '7. SINIFLAR 2. DÖNEM VELİ TOPLANTISI 2. DÖNEM TOPLANTI RAPORU',
+    def: {...DEFAULT_PROFILE},
+    classes: [{id: uid(), name: '7A', students: []}],
+  };
+}
+function uid(){ return 'c' + Math.random().toString(36).slice(2, 9); }
+function load(){
+  try { const j = localStorage.getItem(KEY); if (j) { const o = JSON.parse(j); if (o && o.classes) return o; } } catch(e){}
+  return freshState();
+}
+let saveTimer = null;
+function persist(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }, 250);
+}
+function makeStudent(name, prof){
+  const st = {name, p: {...prof}, seed: newSeed(), edited: false, text: ''};
+  st.text = generate(st.p, st.seed);
+  return st;
+}
+function regen(st, reseed){
+  if (reseed) st.seed = newSeed();
+  st.text = generate(st.p, st.seed);
+  st.edited = false;
+}
+
+/* ====================== Arayüz ====================== */
+const $ = s => document.querySelector(s);
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    const v = attrs[k];
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'value') e.value = v;
+    else if (v === true) e.setAttribute(k, '');
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function profileEditor(p, onChange){
+  const g = el('div', {class: 'grid g-prof'});
+  for (const key of Object.keys(OPT)) {
+    const sel = el('select', {onchange: e => { p[key] = e.target.value; onChange(); }},
+      OPT[key].map(([v, l]) => el('option', {value: v, selected: p[key] === v}, l)));
+    g.append(el('div', {}, el('label', {class: 'f'}, LABEL[key]), sel));
+  }
+  const chk = (key, label) => el('label', {class: 'chk'},
+    el('input', {type: 'checkbox', checked: !!p[key], onchange: e => { p[key] = e.target.checked; onChange(); }}), label);
+  g.append(chk('ekGorev', 'Ek görevlendirmelerden bahsedildi'), chk('toefl', 'TOEFL bilgilendirmesi'), chk('memnun', 'Veli memnun'));
+  const noteBox = el('div', {style: 'margin-top:10px'},
+    el('label', {class: 'f'}, 'Ek not (cümlelerin sonuna aynen eklenir)'),
+    el('input', {type: 'text', value: p.note || '', placeholder: 'Örn: Veli BilTalks etkinliğindeki performanstan çok memnun kaldı.', oninput: e => { p.note = e.target.value; persist(); }, onchange: () => onChange()}));
+  return el('div', {}, g, noteBox);
+}
+
+function renderDefault(){
+  const box = $('#defProfile'); box.replaceChildren(profileEditor(S.def, () => { persist(); }));
+}
+
+function renderClasses(){
+  const host = $('#classes'); host.replaceChildren();
+  S.classes.forEach((c, ci) => {
+    const card = el('section', {class: 'card'});
+    const head = el('div', {class: 'cls-head'},
+      el('input', {type: 'text', value: c.name, 'aria-label': 'Sınıf adı', oninput: e => { c.name = e.target.value; persist(); }}),
+      el('span', {class: 'count'}, c.students.length + ' öğrenci'),
+      el('span', {class: 'sp'}),
+      el('button', {class: 'btn sm', title: 'Yukarı taşı', disabled: ci === 0, onclick: () => move(ci, -1)}, '↑'),
+      el('button', {class: 'btn sm', title: 'Aşağı taşı', disabled: ci === S.classes.length - 1, onclick: () => move(ci, 1)}, '↓'),
+      el('button', {class: 'btn sm danger', onclick: () => { if (confirm(c.name + ' sınıfı silinsin mi?')) { S.classes.splice(ci, 1); renderAll(); } }}, 'Sınıfı sil'));
+    card.append(head);
+
+    if (!c.students.length) card.append(el('div', {class: 'empty'}, 'Henüz öğrenci yok. Aşağıya isim listesini yapıştırın.'));
+    c.students.forEach((st, si) => card.append(studentRow(c, st, si)));
+
+    const ta = el('textarea', {placeholder: 'Öğrenci adlarını her satıra bir isim gelecek şekilde yapıştırın…\n(Başındaki 1. 2. gibi numaralar otomatik temizlenir)'});
+    const add = el('div', {class: 'add-box', style: 'margin-top:12px'}, ta,
+      el('div', {class: 'row-actions', style: 'margin-top:8px'},
+        el('button', {class: 'btn', onclick: () => {
+          const names = ta.value.split(/\r?\n/).map(s => s.replace(/^\s*\d+\s*[\.\)\-–]?\s*/, '').trim()).filter(Boolean);
+          if (!names.length) return toast('Eklenecek isim bulunamadı');
+          names.forEach(n => c.students.push(makeStudent(n, S.def)));
+          renderAll(); toast(names.length + ' öğrenci eklendi');
+        }}, 'Öğrencileri ekle')));
+    card.append(add);
+    host.append(card);
+  });
+}
+
+function autosize(t){ t.style.height = 'auto'; t.style.height = Math.max(64, t.scrollHeight + 2) + 'px'; }
+
+function studentRow(c, st, si){
+  const row = el('div', {class: 'stu'});
+  const txt = el('textarea', {class: 'txt', spellcheck: 'true', lang: 'tr', value: st.text, oninput: e => { st.text = e.target.value; st.edited = true; badge.style.display = ''; autosize(e.target); persist(); updateStat(); }});
+  const badge = el('span', {class: 'badge', title: 'Bu cümleyi elle değiştirdiniz; ayarlardan veya 🎲 ile yeniden yazılırsa kaybolur.', style: st.edited ? '' : 'display:none'}, 'elle düzenlendi');
+  const settings = el('div', {class: 'settings'},
+    profileEditor(st.p, () => { regen(st, false); txt.value = st.text; autosize(txt); badge.style.display = 'none'; persist(); updateStat(); }));
+  const top = el('div', {class: 'stu-top'},
+    el('span', {class: 'no'}, (si + 1) + '.'),
+    el('span', {class: 'nm'}, el('input', {type: 'text', value: st.name, 'aria-label': 'Öğrenci adı', oninput: e => { st.name = e.target.value; persist(); }})),
+    badge,
+    el('button', {class: 'btn sm', title: 'Cümleleri farklı kalıplarla yeniden yaz', onclick: () => { regen(st, true); txt.value = st.text; autosize(txt); badge.style.display = 'none'; persist(); }}, '🎲 Yeniden yaz'),
+    el('button', {class: 'btn sm', onclick: () => row.classList.toggle('open')}, '⚙ Ayarlar'),
+    el('button', {class: 'btn sm ghost', title: 'Yukarı', disabled: si === 0, onclick: () => { swap(c.students, si, si - 1); renderAll(); }}, '↑'),
+    el('button', {class: 'btn sm ghost', title: 'Aşağı', disabled: si === c.students.length - 1, onclick: () => { swap(c.students, si, si + 1); renderAll(); }}, '↓'),
+    el('button', {class: 'btn sm ghost danger', title: 'Öğrenciyi sil', onclick: () => { c.students.splice(si, 1); renderAll(); }}, '✕'));
+  row.append(top, txt, settings);
+  requestAnimationFrame(() => autosize(txt));
+  return row;
+}
+const swap = (a, i, j) => { [a[i], a[j]] = [a[j], a[i]]; };
+function move(i, d){ swap(S.classes, i, i + d); renderAll(); }
+
+function updateStat(){
+  const n = S.classes.reduce((a, c) => a + c.students.length, 0);
+  $('#stat').textContent = S.classes.length + ' sınıf · ' + n + ' öğrenci';
+}
+function renderAll(){
+  $('#title').value = S.title;
+  renderDefault(); renderClasses(); updateStat(); persist();
+}
+
+/* ====================== Önizleme ====================== */
+function renderPreview(){
+  const page = $('#page'); page.replaceChildren();
+  page.append(el('p', {class: 'c'}, S.title));
+  for (const c of S.classes) {
+    page.append(el('p', {class: 'c'}, c.name));
+    if (!c.students.length) continue;
+    page.append(el('ol', {}, c.students.map(st => el('li', {}, el('b', {}, st.name.trim() + ': '), flat(st.text)))));
+  }
+}
+const flat = t => (t || '').replace(/\s*\n\s*/g, ' ').trim();
+
+function showTab(which){
+  const edit = which === 'edit';
+  $('#editView').style.display = edit ? '' : 'none';
+  $('#prevView').style.display = edit ? 'none' : 'block';
+  $('#tabEdit').classList.toggle('on', edit); $('#tabPrev').classList.toggle('on', !edit);
+  if (!edit) renderPreview();
+  window.scrollTo(0, 0);
+}
+
+/* ====================== DOCX üretimi ====================== */
+const xesc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const RPR_B = '<w:rPr><w:b/><w:sz w:val="24"/></w:rPr>';
+const RPR_N = '<w:rPr><w:sz w:val="24"/></w:rPr>';
+const run = (t, rpr) => '<w:r>' + rpr + '<w:t xml:space="preserve">' + xesc(t) + '</w:t></w:r>';
+
+function centerPara(text){
+  return '<w:p><w:pPr><w:jc w:val="center"/>' + RPR_B + '</w:pPr>' + run(text, RPR_B) + '</w:p>';
+}
+function itemPara(numId, name, text){
+  const body = flat(text);
+  return '<w:p><w:pPr><w:pStyle w:val="ListeParagraf"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="' + numId + '"/></w:numPr><w:jc w:val="both"/>' + RPR_B + '</w:pPr>'
+    + run(name.trim(), RPR_B) + run(': ', RPR_B) + (body ? run(body, RPR_N) : '') + '</w:p>';
+}
+
+function buildDocumentXml(){
+  let b = centerPara(S.title.trim());
+  let numId = 0;
+  const numIds = [];
+  for (const c of S.classes) {
+    b += centerPara(c.name.trim());
+    if (!c.students.length) continue;
+    numId++; numIds.push(numId);
+    for (const st of c.students) b += itemPara(numId, st.name, st.text);
+  }
+  const sect = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/><w:cols w:space="708"/><w:docGrid w:linePitch="360"/></w:sectPr>';
+  const xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+    + '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'
+    + b + sect + '</w:body></w:document>';
+  return {xml, numIds};
+}
+function buildNumberingXml(numIds){
+  let nums = '';
+  for (const id of numIds) nums += '<w:num w:numId="' + id + '"><w:abstractNumId w:val="0"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num>';
+  return PARTS.numberingHead + nums + '</w:numbering>';
+}
+function buildCoreXml(){
+  const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+  return PARTS.core.replace(/(<dcterms:created[^>]*>)[^<]*/, '$1' + now).replace(/(<dcterms:modified[^>]*>)[^<]*/, '$1' + now);
+}
+
+/* --- basit ZIP yazıcı (sıkıştırmasız, bağımlılık yok) --- */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8){ let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zip(files){
+  const enc = new TextEncoder(); const chunks = []; const central = []; let off = 0;
+  const d = new Date();
+  const dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  for (const [name, content] of files) {
+    const nb = enc.encode(name), data = enc.encode(content), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true); lh.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(lh.buffer), nb, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true);
+    ch.setUint32(42, off, true);
+    central.push(new Uint8Array(ch.buffer), nb);
+    off += 30 + nb.length + data.length;
+  }
+  let csize = 0; for (const c of central) csize += c.length;
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, csize, true); end.setUint32(16, off, true);
+  return new Blob([...chunks, ...central, new Uint8Array(end.buffer)], {type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+
+function download(blob, name){
+  const a = el('a', {href: URL.createObjectURL(blob), download: name});
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function safeName(){
+  const map = {'ç':'c','Ç':'C','ğ':'g','Ğ':'G','ı':'i','İ':'I','ö':'o','Ö':'O','ş':'s','Ş':'S','ü':'u','Ü':'U','â':'a','Â':'A','î':'i','û':'u'};
+  const base = S.title.trim().replace(/[çÇğĞıİöÖşŞüÜâÂîû]/g, ch => map[ch]).replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Veli_Toplantisi_Raporu';
+  return base.slice(0, 120) + '.docx';
+}
+
+function exportDocx(){
+  if (!S.classes.some(c => c.students.length)) return toast('Önce öğrenci ekleyin');
+  const {xml, numIds} = buildDocumentXml();
+  const files = [
+    ['[Content_Types].xml', PARTS.contentTypes],
+    ['_rels/.rels', PARTS.rootRels],
+    ['word/document.xml', xml],
+    ['word/_rels/document.xml.rels', PARTS.docRels],
+    ['word/numbering.xml', buildNumberingXml(numIds)],
+    ['word/styles.xml', PARTS.styles],
+    ['word/settings.xml', PARTS.settings],
+    ['word/webSettings.xml', PARTS.webSettings],
+    ['word/fontTable.xml', PARTS.fontTable],
+    ['word/theme/theme1.xml', PARTS.theme],
+    ['docProps/core.xml', buildCoreXml()],
+    ['docProps/app.xml', PARTS.app],
+  ];
+  download(zip(files), safeName());
+  toast('Word dosyası indirildi');
+}
+
+/* ====================== Olaylar ====================== */
+$('#title').addEventListener('input', e => { S.title = e.target.value; persist(); });
+$('#tabEdit').onclick = () => showTab('edit');
+$('#tabPrev').onclick = () => showTab('prev');
+$('#btnDocx').onclick = exportDocx;
+$('#btnAddClass').onclick = () => { S.classes.push({id: uid(), name: 'Yeni sınıf', students: []}); renderAll(); window.scrollTo(0, document.body.scrollHeight); };
+$('#btnApplyAll').onclick = () => {
+  const any = S.classes.some(c => c.students.some(s => s.edited));
+  if (any && !confirm('Elle düzenlediğiniz cümleler de varsayılan profille yeniden yazılacak. Devam edilsin mi?')) return;
+  S.classes.forEach(c => c.students.forEach(s => { s.p = {...S.def}; regen(s, false); }));
+  renderAll(); toast('Varsayılan profil uygulandı');
+};
+$('#btnRerollAll').onclick = () => {
+  const any = S.classes.some(c => c.students.some(s => s.edited));
+  if (any && !confirm('Elle düzenlediğiniz cümleler de yeniden yazılacak. Devam edilsin mi?')) return;
+  S.classes.forEach(c => c.students.forEach(s => regen(s, true)));
+  renderAll(); toast('Tüm cümleler yeniden yazıldı');
+};
+$('#btnSave').onclick = () => download(new Blob([JSON.stringify(S, null, 1)], {type: 'application/json'}), 'veli_rapor_yedek.json');
+$('#btnLoad').onclick = () => $('#fileLoad').click();
+$('#fileLoad').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => { const o = JSON.parse(t); if (!o.classes) throw 0; S = o; renderAll(); toast('Yedek yüklendi'); }).catch(() => toast('Geçersiz yedek dosyası'));
+  e.target.value = '';
+};
+$('#btnReset').onclick = () => { if (confirm('Tüm sınıflar ve öğrenciler silinecek. Emin misiniz?')) { S = freshState(); renderAll(); } };
+
+S = load();
+renderAll();
+</script>
+</body>
+</html>
